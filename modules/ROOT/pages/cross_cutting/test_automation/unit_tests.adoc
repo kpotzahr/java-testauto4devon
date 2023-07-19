@@ -1,0 +1,17 @@
+== Unit- and Unit-Integration-Tests
+
+* AAA pattern
+
+* High coverage != good tests, but low coverage = missing tests
+
+* Use TDD to improve code and test quality
+
+* Prefer delegation over inheritance for cross-cutting testing functionality. Good places to put this kind of code can be realized and reused via the JUnit @Rule mechanism.
+
+* Tool-Stack: Junit 5, assertJ, Mockito
+
+* Use AssertJ to write good readable and maintainable tests that also provide valuable feedback in case a test fails. Do not use legacy JUnit methods like assertEquals anymore!
+
+
+https://testing.googleblog.com/2014/03/testing-on-toilet-what-makes-good-test.html
+

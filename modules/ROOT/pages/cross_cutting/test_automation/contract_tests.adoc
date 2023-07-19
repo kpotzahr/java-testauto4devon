@@ -1,0 +1,10 @@
+== Consumer Driven Contract testing
+Typical tool: PACT
+
+* How to decide about integration level
+Unit, Unit Integration vs. Subsystem
+
+* How to apply to asynchronous communication
+Helper: Embedded Kafka
+
+* How do pipelines interact -> use Pact Broker

@@ -1,0 +1,46 @@
+= Test automation
+
+There is not one set of rules and tools for test automation.
+Typically, there are the following *integration levels* with different test scopes:
+
+* *Unit-Tests*: test for smallest testable unit; not more than one class; all other classes mocked; especially no access to database
+* *(Unit-Integration-Tests)*: closely rated units are tested together; outside scope mocked; no access to database; often not considered as an extra level, but as part of Unit-Tests
+* *Subsystem-Tests (aka API-Tests or Service-Tests)*: test for a fully integrated deployable part of the system; usually with database (can be in memory); API calls not via Java methods, but from the outside, e.g. REST; external systems or system parts are mocked
+* *System-Tests (aka UI-Tests)*: tests for a fully integrated system with backend and frontend, usually with database; external systems are mocked
+* *System-Integration-Tests*: tests for multiple fully integrated systems together; from a technical perspective they can be treated like System Tests, only the organization of such tests is much more complicated
+
+In addition to the integration levels test automation can be done for differnt quality characteristics of a software product (e.g. functionality, performance, security, ...). 
+
+== General good practices
+
+=== Utilize different integration levels
+
+* Apply the https://martinfowler.com/articles/practical-test-pyramid.html#TheTestPyramid[test pyramid] for test intensity on different levels, i.e. aim for many Unit-Tests for fast feedback and only few UI-Tests to ensure integration. 
+* Use Unit-Tests and Unit-Integration-Tests for business-logic, complex mappings and exceptional flows that need mocking.
+* Adapters and other coordinators (i.e. code that mainly maps and routes) can be tested implicitly in Subsystem-Tests.
+
+=== Apply FIRST principle
+Implement https://dzone.com/articles/first-principles-solid-rules-for-tests[FIRST] tests (a must for Unit-Tests):
+
+* Fast
+* Isolated (test must be independent of each other)
+* Repeatable
+* Self-Validating (no test without assertion)
+* Thorough (cover not only the happy path)
+
+=== Stating the obvious, because reality is often different
+
+* Decide what to test before coding. Tests should have a clear goal that should also be documented.
+* Test code shall NOT be seen as second class code. Consider design, architecture and code-style also for your test code.
+* Use continuous integration and establish that the entire team wants to have clean builds and running tests.
+
+== Specific good practices
+
+For *functional* tests see:
+
+* xref:unit_tests.adoc[*Unit- and Unit-Integration-Tests*]
+* xref:unit_tests.adoc[*Functional Subsystem- and System-Tests (API + UI)*]
+
+For *non-functional* tests see:
+
+* xref:unit_tests.adoc[*Consumer-Driven-Contract-Tests*]
