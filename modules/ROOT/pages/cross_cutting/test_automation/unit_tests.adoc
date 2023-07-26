@@ -78,11 +78,10 @@ Parameterized good cases::
             "CB_, COMMON",
             "GB_1234 ,INVITED"})
     void shouldCreateValidCommonBookingTokens(String tokenStr, BookingType expectedType) {
-        // arrange 
+        // act 
         BookingToken token = BookingToken.of(tokenStr);
-        // act
-        assertThat(token.getToken()).isEqualTo(tokenStr);
         // assert
+        assertThat(token.getToken()).isEqualTo(tokenStr);
         assertThat(token.getBookingType()).isEqualTo(expectedType);
     }
 --
@@ -95,6 +94,7 @@ Parameterized error cases::
     @NullSource
     @ValueSource(strings = { "A", "CB1233", " ", "122323423423" })
     void shouldDetectInvalidTokens(String token) {
+        // act & assert
         assertThrows(WrongTokenException.class, () -> BookingToken.of(token));
     }
 --
