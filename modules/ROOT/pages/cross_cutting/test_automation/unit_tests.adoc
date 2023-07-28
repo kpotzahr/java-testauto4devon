@@ -1,4 +1,5 @@
 == Unit- and Unit-Integration-Tests Good Practices
+This articles focuses on Unit- and Unit-Integration-Tests.
 General test automation good practices can be found xref:test_automation.adoc[here].
 
 === Use TDD to improve code and test quality

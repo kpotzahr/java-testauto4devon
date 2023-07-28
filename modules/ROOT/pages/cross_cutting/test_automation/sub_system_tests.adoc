@@ -1,14 +1,19 @@
-== Functional Subsystem- and System-Tests (API + UI)
-API test in this section means a functional test (step) that uses the API calls to trigger or check functionality of the fully integrated system under test.
-This is a difference to unit testing of a method that exposes an endpoint via REST.
+= Functional Subsystem- and System-Tests (API + UI)
 
-Typical Tool: RestAssured
-TODO: example
+This article focuses on Subsystem- and System-Tests. General test automation good practices can be found xref:test_automation.adoc[here].
+
+== General Good Practices
 
 === Use BDD to develop test scenarios
-Typical Tool: Cucumber
+https://cucumber.io/docs/bdd/[Behavior Driven Development (BDD)] is a software development method that generates a common understanding by conversations with business, developers and testers about how the system should behave.
+The wanted behavior is captured in scenarios with concrete example data in the so called https://cucumber.io/docs/gherkin/reference/[Gherkin] syntax.
+The syntax mainly consists of natural language with business terms in a given - when - then - structure.
+The scenarios are defined before implemenation starts, so that the implementation can take the right direction from the beginning.
+BDD tools allow automing the scenarios directly as automated tests. 
 
-==== BDD and bad good practices
+Typical Tool: https://cucumber.io/[Cucumber]
+
+==== BDD good and bad practices
 https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/
 
 Most important:
@@ -22,7 +27,50 @@ Just because your expected result can only be checked in the UI does not mean yo
 You can use the API to create you preconditions and the perform some step in the UI.
 This makes the complete test faster and more reliable.
 
+=== Prevent explicit waiting
+
+Selenium implicit wait
+
+Typical tool: Awaitility
+
+
+=== Apply a rerun for failed tests
+
+Cucumber, Maven surefire features
+
+=== Make tests transparent and analyzable by proper reporting
+Typical toolss:
+
+* Combination with Test Management e.g. in Jira / Xray for better collaboration with BU: aggregated view, business view on coverage (BU, BA, tester)
+* Jenkins Cucumber plugin: execution times per step + analysis of pipeline failure (dev)
+* Allure reporting (dev, tester)
+* Pushing metrics to Kibana or Influx + Grafana: aggregated view on execution times and stability (dev, architect)
+
+
+== API-related Good Practices
+
+====
+*API-test* in this section means a functional test that uses API calls to trigger or check functionality of a fully integrated system under test.
+This is a difference to unit testing of a method that exposes an endpoint via REST.
+====
+
+Typical Tool: RestAssured
+TODO: example
+
 === Hide API authentication at a central point
+
+=== Mock external system that are not in your scope
+Typical tool: Wiremock
+
+
+== UI-related Good Practices
+
+====
+*UI-test* in this section means a functional test that uses UI calls to trigger or check functionality of a fully integrated system under test.
+This is a difference to Unit- or Unit-Integration Testsof a UI components.
+====
+
+Typical tool: Selenuim
 
 === Encapsulate UI technology specific logic in page objects
 
@@ -30,21 +78,20 @@ This makes the complete test faster and more reliable.
 
 === Add screenshots to the result report
 
-=== Mock external system that are not in your scope
-Typical tool: Wiremock
 
+== Test Data Good Practices
 
 === Keep references to data in the database at a central place
 
 === Use test data builders with defaults for complex structures
 
-=== Prevent explicit waiting
+== Test Execution Good Practices
 
-Selenium implicit wait
+=== Ensure Fail Fast in pipelines
+* Parallel exection (surefire or cucumber)
+* Tag-wise (e.g. nightly)
 
-Typical tool: Awaitility
-
-=== Apply a rerun for failed tests
-
-Cucumber, Maven surefire features
-
+=== Simplify environment setup for local tests
+* Test Containers
+**  with Quarkus
+* Local Stack
