@@ -1,4 +1,4 @@
-= Test automation
+= Test Automation
 
 Developing in an agile way has become normal in our projects. 
 Having a quality assured shippable product at the end of each sprint can only be achieved with an appropriate number of automated tests. 
@@ -76,10 +76,10 @@ This allows mocking of external functionality.
 
 For *functional* tests see:
 
-* xref:unit_tests.adoc[*Unit- and Unit-Integration-Tests*]
-* xref:sub_system_tests.adoc[*Functional Subsystem- and System-Tests (API + UI)*]
+* xref:cross_cutting/test_automation/unit_tests.adoc[*Unit- and Unit-Integration-Tests*]
+* xref:cross_cutting/test_automation/sub_system_tests.adoc[*Functional Subsystem- and System-Tests (API + UI)*]
 
 For *non-functional* tests see:
 
-* xref:unit_tests.adoc[*Consumer-Driven-Contract-Tests*]
-* xref:architecture_tests.adoc[*Architecture-Tests*]
+* xref:cross_cutting/test_automation/unit_tests.adoc[*Consumer-Driven-Contract-Tests*]
+* xref:cross_cutting/test_automation/architecture_tests.adoc[*Architecture-Tests*]

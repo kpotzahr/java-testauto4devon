@@ -1,6 +1,6 @@
-= Functional Subsystem- and System-Tests (API + UI)
+= Subsystem- and System-Tests
 
-This article focuses on Subsystem- and System-Tests. General test automation good practices can be found xref:test_automation.adoc[here].
+This article focuses on Subsystem- and System-Tests. General test automation good practices can be found xref:cross_cutting/test_automation/test_automation.adoc[here].
 
 == General Good Practices
 
@@ -8,8 +8,8 @@ This article focuses on Subsystem- and System-Tests. General test automation goo
 https://cucumber.io/docs/bdd/[Behavior Driven Development (BDD)] is a software development method that generates a common understanding by conversations with business, developers and testers about how the system should behave.
 The wanted behavior is captured in scenarios with concrete example data in the so called https://cucumber.io/docs/gherkin/reference/[Gherkin] syntax.
 The syntax mainly consists of natural language with business terms in a given - when - then - structure.
-The scenarios are defined before implemenation starts, so that the implementation can take the right direction from the beginning.
-BDD tools allow automing the scenarios directly as automated tests. 
+The scenarios are defined before implementation starts, so that the implementation can take the right direction from the beginning.
+BDD tools allow automating the scenarios directly as automated tests.
 
 Typical Tool: https://cucumber.io/[Cucumber]
 
@@ -39,7 +39,7 @@ Typical tool: Awaitility
 Cucumber, Maven surefire features
 
 === Make tests transparent and analyzable by proper reporting
-Typical toolss:
+Typical tools:
 
 * Combination with Test Management e.g. in Jira / Xray for better collaboration with BU: aggregated view, business view on coverage (BU, BA, tester)
 * Jenkins Cucumber plugin: execution times per step + analysis of pipeline failure (dev)
@@ -55,7 +55,28 @@ This is a difference to unit testing of a method that exposes an endpoint via RE
 ====
 
 Typical Tool: RestAssured
-TODO: example
+
+API Test with RestAssured::
++
+--
+[source, java]
+@Test
+@DisplayName("Test for getting an existing product by id")
+public void testGetProductByIdEndpoint() {
+    // arrange
+    UUID productId = UUID.fromString("6c4d8ad9-f544-4cc4-8947-113c80fbed07");
+    // act
+    ProductDto result = when().get("/products/"+productId.toString())
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .as(ProductDto.class);
+    // assert
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getId(), is(productId.toString()));
+}
+--
 
 === Hide API authentication at a central point
 
@@ -67,10 +88,10 @@ Typical tool: Wiremock
 
 ====
 *UI-test* in this section means a functional test that uses UI calls to trigger or check functionality of a fully integrated system under test.
-This is a difference to Unit- or Unit-Integration Testsof a UI components.
+This is a difference to Unit- or Unit-Integration Tests of a UI components.
 ====
 
-Typical tool: Selenuim
+Typical tool: Selenium
 
 === Encapsulate UI technology specific logic in page objects
 
@@ -92,6 +113,21 @@ Typical tool: Selenuim
 * Tag-wise (e.g. nightly)
 
 === Simplify environment setup for local tests
-* Test Containers
-**  with Quarkus
-* Local Stack
+A local execution of tests is usually possible without any problems for isolated unit tests.
+In contrast, sub-system tests involve databases, message brokers or other external systems that make local execution difficult.
+
+One possibility is to set up the necessary systems using local Docker containers or to connect to corresponding cloud services (e.g. databases).
+In both cases, local execution requires manual effort before the tests can be run.
+In a microservice architecture with very diverse microservice environments, for example different databases / versions, this can become arbitrarily complex.
+
+link:https://testcontainers.com/[TestContainers] offer a way to set up the necessary environment on-the-fly and without further local configuration.
+TestContainers uses Docker containers in the background, which are defined accordingly in the test itself.
+For example, a Postgres database and a Kafka message broker can be defined in this way, which are then automatically provided via Docker Containers.
+An additional local configuration is no longer necessary.
+After the test has been completed, all resources are removed again so that a new test execution is based on a clean environment.
+An example usage can be found link:https://testcontainers.com/guides/getting-started-with-testcontainers-for-java/[here].
+
+Quarkus goes one step further with link:https://quarkus.io/guides/dev-services[DevServices].
+For example, if a Postgres DB extension is added as a dependency, the corresponding test containers are automatically configured and started in the background when a test is started.
+In addition to pure test execution, this also applies to starting the application in dev mode.
+However, this is so far limited to the existing DevServices since it is not possible to have user-defined DevServices.

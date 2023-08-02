@@ -1,4 +1,4 @@
-== Architecture Tests
+= Architecture Tests
 Typical tool: ArchUnit
 
 The verification of architecture guidelines requires that basic naming, package structure and dependencies are checked.

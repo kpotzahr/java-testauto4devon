@@ -1,10 +1,11 @@
-== Consumer Driven Contract testing
+= Consumer Driven Contract (CDC) Tests
+
 Typical tool: PACT
 
 * How to decide about integration level
 Unit, Unit Integration vs. Subsystem
 
 * How to apply to asynchronous communication
-Helper: Embedded Kafka
+Helper: Embedded Kafka or Kafka on TestContainers
 
 * How do pipelines interact -> use Pact Broker
