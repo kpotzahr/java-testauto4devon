@@ -6,6 +6,7 @@ This article focuses on Subsystem- and System-Tests. General test automation goo
 
 === Use BDD to develop test scenarios
 https://cucumber.io/docs/bdd/[Behavior Driven Development (BDD)] is a software development method that generates a common understanding by conversations with business, developers and testers about how the system should behave.
+This prevents problems due to misunderstandings and helps closing gaps in the specification.
 The wanted behavior is captured in scenarios with concrete example data in the so called https://cucumber.io/docs/gherkin/reference/[Gherkin] syntax.
 The syntax mainly consists of natural language with business terms in a given - when - then - structure.
 The scenarios are defined before implementation starts, so that the implementation can take the right direction from the beginning.
@@ -13,14 +14,16 @@ BDD tools allow automating the scenarios directly as automated tests.
 
 Typical Tool: https://cucumber.io/[Cucumber]
 
-==== BDD good and bad practices
-https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/
+==== Consider common BDD good and bad practices
+Good and bad practices how to write scenarios with Gherkin can be found https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/[here].
+
 
 Most important:
 
-* Collaborate with business, dev and test
-* Short scenarios (leave out irrelevant data, combine UI steps)
-* Do NOT use Generic UI steps
+* *Collaborate* with business, deelopement and test to create scenarios.
+Do NOT expect the business or testers to hand them readily over to you as a developer.
+* Aim for *short* scenarios (leave out irrelevant data, they can be set in the code as defaults; combine small UI action to user actions; ....).
+* Do NOT use generic UI steps, but complete user actions: e.g. instead of "when the user enters "admin" in field "username" the user enters "adminpwd" in field "password" and the user presses the "login" button", use "when the user logs in as administrator"
 
 === Mix API and UI steps
 Just because your expected result can only be checked in the UI does not mean your whole test must be executed via UI.
