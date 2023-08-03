@@ -43,10 +43,10 @@ Typical tools:
 
 === Apply a rerun for failed tests
 Even if you do good waiting, asynchronous behavior in the system under test might make your tests flaky.
-So, consider to run all failing tests a second time in the pipeline, so that flaky tests do not break your build.
+So, consider running all failing tests a second time in the pipeline, so that flaky tests do not break your build.
 But do not ignore these flaky tests!
-Even if you do not break the build you should analyze and stabilize flaky tests.
-It helps to keep the test runtimes low and you might otherwise overlook random errors in your application (not only tests can be flaky).
+Even if you do not break the build, you should analyze and stabilize flaky tests.
+It helps to keep the test runtimes low, and you might otherwise overlook random errors in your application (not only tests can be flaky).
 
 Typical tools: 
 
@@ -55,14 +55,14 @@ Typical tools:
 
 
 === Make tests transparent and analyzable by proper reporting
-There are three views that need to be adressed by test reporting:
+There are three views that need to be addressed by test reporting:
 
 * Business: If you include the business in test creation (which is highly recommended), they will want to see what is tested and that the tests are successful. 
 But they will not click through Jenkins builds to see this.
 
 Typical tool: https://www.getxray.app/test-management[Jira Xray Test Management]
 
-* Developers, testers: If a test fails, the reason for the failure must be easiliy analyzable.
+* Developers, testers: If a test fails, the reason for the failure must be easily analyzable.
 
 Typical tool: https://plugins.jenkins.io/cucumber-reports/[Cucumber Jenkins Plugin]
 
@@ -102,13 +102,175 @@ public void testGetProductByIdEndpoint() {
     assertThat(result, is(notNullValue()));
     assertThat(result.getId(), is(productId.toString()));
 }
+
 --
 
-=== Hide API authentication at a central point
+=== Execute general initializations at a central point
+
+Example Junit Rule for RestAssured (init API URL and time mapping)::
++
+--
+[source, java]
+public class RestassuredConnectionSetup implements BeforeAllCallback {
+    @Override
+    public void beforeAll(ExtensionContext extensionContext) {
+        RestAssured.baseURI = TestConfiguration.getApiUrl();
+        RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+                ObjectMapperConfig.objectMapperConfig()
+                    .jackson2ObjectMapperFactory((type, s) -> {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        objectMapper.registerModule(new JavaTimeModule());
+                        objectMapper.configure(
+                            SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                    return objectMapper;
+                })
+        );
+    }
+}
+
+--
+
+=== Execute API authorization at a central point
+You can have API-tests that test authorization and authentication, but in most cases, you want to test the functionality only.
+So, keep authorization details out of your functional tests.
+If you use RestAssured, you can use a rule that intersects the RequestSpecification and adds authorization details.
+If your test framework supports Spring (like Cucumber), you can intercept requests in the RestTemplate.
+
+Examples:
+
+[tabs]
+====
+RestAssured Junit Rule for Bearer token::
++
+--
+[source, java]
+public class LoggedInRequestSetup implements ParameterResolver {
+    private static String token = null;
+    private String generateLoginToken() {
+        RestAssured.baseURI = TestConfiguration.getApiUrl();
+        return RestAssured.with()
+                .body(User.validUser())
+                .post(TestConfiguration.loginUrl())
+                .header(HttpHeaders.AUTHORIZATION);
+    }
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext,
+        ExtensionContext extensionContext) throws ParameterResolutionException {
+        return parameterContext.getParameter().getType() == RequestSpecification.class;
+    }
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, 
+        ExtensionContext extensionContext) throws ParameterResolutionException {
+        if (null == token) {
+            token = generateLoginToken();
+        }
+        return RestAssured.with()
+            .contentType("application/json")
+            .header("Authorization", "Bearer " + token);
+    }
+}
+
+--
+
+Spring Bean for csrf token::
++
+--
+[source, java]  
+@Bean
+public TestRestTemplate restTemplate() {
+    TestRestTemplate restTemplate = new TestRestTemplate(
+        TestRestTemplate.HttpClientOption.ENABLE_COOKIES);
+    restTemplate.setUriTemplateHandler(
+        new DefaultUriBuilderFactory(TestConfiguration.getApiUrl()));
+    ResponseEntity<Void> responseEntity = 
+        restTemplate.postForEntity(TestPaths.login(), User.validUser(), Void.class);
+    assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    ResponseEntity<Token> tokenResponse = restTemplate.getForEntity(
+        "security/v1/csrftoken", Token.class);
+    assertThat(tokenResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+    final Token csrfToken = tokenResponse.getBody();
+    assertThat(csrfToken).isNotNull();
+    restTemplate.getRestTemplate().setInterceptors(
+      Collections.singletonList((request, body, execution) -> {
+        request.getHeaders()
+          .add(csrfToken.getHeaderName(), csrfToken.getToken());
+        return execution.execute(request, body);
+      }));
+    return restTemplate;
+  }
+
+--
+
+====
 
 === Mock external system that are not in your scope
-Typical tool: Wiremock
+Your test should only fail if your system under test does not behave like expected. 
+It may not depend on other systems that are not in your test scope.
+So, if your system under test communicates with another system or microservice, you need to mock the responses.
+If possible, prepare standard responses for test that do not test the interaction, but need a positive response to go on.
 
+
+Typical tool: https://wiremock.org/[Wiremock]
+
+Example Junit Rule to start Wiremock and set a OK response::
++
+--
+[source, java]
+public class WiremockSetup implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+    private static WireMockServer wireMockServer = null;
+    @Override
+    public void beforeAll(ExtensionContext extensionContext)  {
+        wireMockServer = new WireMockServer(wireMockConfig()
+            .port(TestConfiguration.wirmockPort()));
+        wireMockServer.start();
+        WireMock.configureFor(TestConfiguration.host(), TestConfiguration.wirmockPort());
+    }
+    @Override
+    public void afterAll(ExtensionContext extensionContext)  {
+        if (null != wireMockServer) {
+            wireMockServer.stop();
+        }
+    }
+    @Override
+    public void beforeEach(ExtensionContext extensionContext)  {
+        WireMock.resetAllRequests();
+        WireMock.stubFor(post(urlEqualTo(TestPatchs.myApi()))
+                .willReturn(aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withStatus(200)));
+    }
+}
+
+--
+
+Example Junit test with Wiremock rule::
++
+--
+[source, java]
+@ExtendWith(LoggedInRequestSetup.class)
+@ExtendWith(WiremockSetup.class)
+public class BookingConfirmationApiTest {
+    @Test
+    public void bookingNotSuccessfulForNotWorkingEmail(RequestSpecification request) {
+        final String errorEmail = "myveryspecialemailforerror@error.de";
+        WireMock.stubFor(post(urlEqualTo(TestPaths.myApi()))
+                .willReturn(aResponse().withHeader("Content-Type", "application/json")
+                        .withStatus(200)));
+        WireMock.stubFor(post(urlEqualTo(TestPaths.myApi()))
+                .withRequestBody(matchingJsonPath("recipient", equalTo(errorEmail)))
+                .willReturn(aResponse().withStatus(400)));
+        Booking booking = BookingBuilder.defaultBooking().withEmail(errorEmail);
+        request.body(booking)
+                .when()
+                .post(TestPaths.createBooking())
+                .then().statusCode(500);
+        List<LoggedRequest> requests = WireMock.findAll(
+            postRequestedFor(urlEqualTo(TestPaths.myApi())));
+        assertThat(requests).hasSize(1);
+    }
+}
+
+--
 
 == UI-related Good Practices
 
@@ -135,6 +297,7 @@ Typical tool: Selenium
 == Test Execution Good Practices
 
 === Ensure Fail Fast in pipelines
+
 * Parallel exection (surefire or cucumber)
 * Tag-wise (e.g. nightly)
 
