@@ -30,25 +30,48 @@ Just because your expected result can only be checked in the UI does not mean yo
 You can use the API to create you preconditions and the perform some step in the UI.
 This makes the complete test faster and more reliable.
 
-=== Prevent explicit waiting
+=== Prevent waiting for an explicit time
+Whenever you have asynchronous behavior in your system under test your test needs to wait until the system has finished the reaction on some asynchronous event.
+This is always the case for UI tests when the screen reacts on user interaction, but can also happen in API tests when the system works with asynchronous events.
+Avoid waiting an explicit amount of time (dont't use Thread.sleep(5000) or TimeUnit.SECONDS.sleep(5))!
+It makes your tests slow and often not even more stable.
 
-Selenium implicit wait
+Typical tools: 
 
-Typical tool: Awaitility
-
+* http://www.awaitility.org/[awaitility]
+* https://www.guru99.com/implicit-explicit-waits-selenium.html[Selenium waiting features] like implicit waiting and WebDriverWait and FluentWait
 
 === Apply a rerun for failed tests
+Even if you do good waiting, asynchronous behavior in the system under test might make your tests flaky.
+So, consider to run all failing tests a second time in the pipeline, so that flaky tests do not break your build.
+But do not ignore these flaky tests!
+Even if you do not break the build you should analyze and stabilize flaky tests.
+It helps to keep the test runtimes low and you might otherwise overlook random errors in your application (not only tests can be flaky).
 
-Cucumber, Maven surefire features
+Typical tools: 
+
+* https://maven.apache.org/surefire/maven-surefire-plugin/examples/rerun-failing-tests.html[Maven surefire rerun feature]
+* https://medium.com/@belek.bagishbekov/how-to-rerun-failed-test-cases-in-cucumber-b7fe9b1dcf9c[Cucumber rerun feature]
+
 
 === Make tests transparent and analyzable by proper reporting
+There are three views that need to be adressed by test reporting:
+
+* Business: If you include the business in test creation (which is highly recommended), they will want to see what is tested and that the tests are successful. 
+But they will not click through Jenkins builds to see this.
+
+Typical tool: https://www.getxray.app/test-management[Jira Xray Test Management]
+
+* Developers, testers: If a test fails, the reason for the failure must be easiliy analyzable.
+
+Typical tool: https://plugins.jenkins.io/cucumber-reports/[Cucumber Jenkins Plugin]
+
+* Architects, developers, testers: Aggregated views on test runs are needed to detect general improvement needs like runtime optimizations.  
+
 Typical tools:
 
-* Combination with Test Management e.g. in Jira / Xray for better collaboration with BU: aggregated view, business view on coverage (BU, BA, tester)
-* Jenkins Cucumber plugin: execution times per step + analysis of pipeline failure (dev)
-* Allure reporting (dev, tester)
-* Pushing metrics to Kibana or Influx + Grafana: aggregated view on execution times and stability (dev, architect)
-
+* https://docs.qameta.io/allure/[Allure reporting] 
+* Pushing individual metrics to Kibana or Influx + Grafana to get an aggregated view on execution times and stability (recommended for large-scale projects when the number of tests grows)
 
 == API-related Good Practices
 
@@ -57,7 +80,7 @@ Typical tools:
 This is a difference to unit testing of a method that exposes an endpoint via REST.
 ====
 
-Typical Tool: RestAssured
+Typical Tool: https://rest-assured.io/[RestAssured]
 
 API Test with RestAssured::
 +
