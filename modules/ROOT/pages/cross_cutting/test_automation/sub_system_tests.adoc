@@ -277,14 +277,35 @@ public class BookingConfirmationApiTest {
 This is a difference to Unit- or Unit-Integration Tests of a UI components.
 ====
 
-Typical tool: Selenium
+Typical tool: https://www.selenium.dev/documentation/webdriver/[Selenium WebDriver]
 
 === Encapsulate UI technology specific logic in page objects
+When the UI changes, you often need to change your UI tests.
+But if the change is just affecting the structure of one page, you don't want to change all tests that use the page.
+To prevent this, encapsulate the access to widgets on a page in a page object.
+More details can be found https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/[here].
 
 === Reflect UI components in your test code
 
 === Add screenshots to the result report
+A screenshot from the time of the failure of a test is in many cases enough to understand what went wrong (e.g. is the expected value really not displayed or is the UI still loading).
+When working with Selenium you can let the WebDriver take a screenshot.
+When integrated with Cucumber add screenshots in an After hook:
 
+Example Cucumber After hook that adds screenshot with Selenium WebDriver::
++
+--
+[source, java]
+    @After()
+    public void afterScenarioUI(Scenario scenario) {
+        if (scenario.isFailed() && null != webDriver()) {
+            scenario.attach(
+                ((TakesScreenshot) webDriver()).getScreenshotAs(OutputType.BYTES), 
+                "image/png", scenario.getName());
+        }
+    }
+    
+--
 
 == Test Data Good Practices
 
@@ -296,7 +317,7 @@ Typical tool: Selenium
 
 === Ensure Fail Fast in pipelines
 
-* Parallel exection (surefire or cucumber)
+* Parallel execution (surefire or cucumber)
 * Tag-wise (e.g. nightly)
 
 === Simplify environment setup for local tests
