@@ -120,8 +120,7 @@ public class RestassuredConnectionSetup implements BeforeAllCallback {
                     .jackson2ObjectMapperFactory((type, s) -> {
                         ObjectMapper objectMapper = new ObjectMapper();
                         objectMapper.registerModule(new JavaTimeModule());
-                        objectMapper.configure(
-                            SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+                        objectMapper.configure(SerializationFeatureWRITE_DATES_AS_TIMESTAMPS, false);
                     return objectMapper;
                 })
         );
@@ -146,13 +145,6 @@ RestAssured Junit Rule for Bearer token::
 [source, java]
 public class LoggedInRequestSetup implements ParameterResolver {
     private static String token = null;
-    private String generateLoginToken() {
-        RestAssured.baseURI = TestConfiguration.getApiUrl();
-        return RestAssured.with()
-                .body(User.validUser())
-                .post(TestConfiguration.loginUrl())
-                .header(HttpHeaders.AUTHORIZATION);
-    }
     @Override
     public boolean supportsParameter(ParameterContext parameterContext,
         ExtensionContext extensionContext) throws ParameterResolutionException {
@@ -168,6 +160,13 @@ public class LoggedInRequestSetup implements ParameterResolver {
             .contentType("application/json")
             .header("Authorization", "Bearer " + token);
     }
+    private String generateLoginToken() {
+        RestAssured.baseURI = TestConfiguration.getApiUrl();
+        return RestAssured.with()
+                .body(User.validUser())
+                .post(TestConfiguration.loginUrl())
+                .header(HttpHeaders.AUTHORIZATION);
+    }
 }
 
 --
@@ -178,23 +177,21 @@ Spring Bean for csrf token::
 [source, java]  
 @Bean
 public TestRestTemplate restTemplate() {
-    TestRestTemplate restTemplate = new TestRestTemplate(
-        TestRestTemplate.HttpClientOption.ENABLE_COOKIES);
-    restTemplate.setUriTemplateHandler(
-        new DefaultUriBuilderFactory(TestConfiguration.getApiUrl()));
-    ResponseEntity<Void> responseEntity = 
-        restTemplate.postForEntity(TestPaths.login(), User.validUser(), Void.class);
+    TestRestTemplate restTemplate = new TestRestTemplate(TestRestTemplate.HttpClientOption.ENABLE_COOKIES);
+    restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(TestConfiguration.getApiUrl()));
+    // login
+    ResponseEntity<Void> responseEntity = restTemplate.postForEntity(TestPaths.login(), User.validUser(), Void.class);
     assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-    ResponseEntity<Token> tokenResponse = restTemplate.getForEntity(
-        "security/v1/csrftoken", Token.class);
+    // get csrf token
+    ResponseEntity<Token> tokenResponse = restTemplate.getForEntity(TestPaths.csrf(), Token.class);
     assertThat(tokenResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     final Token csrfToken = tokenResponse.getBody();
     assertThat(csrfToken).isNotNull();
-    restTemplate.getRestTemplate().setInterceptors(
-      Collections.singletonList((request, body, execution) -> {
-        request.getHeaders()
-          .add(csrfToken.getHeaderName(), csrfToken.getToken());
-        return execution.execute(request, body);
+    // add csrf token to all REST cally
+    restTemplate.getRestTemplate().setInterceptors(Collections.singletonList(
+        (request, body, execution) -> {
+            request.getHeaders().add(csrfToken.getHeaderName(), csrfToken.getToken());
+            return execution.execute(request, body);
       }));
     return restTemplate;
   }
@@ -252,21 +249,22 @@ Example Junit test with Wiremock rule::
 public class BookingConfirmationApiTest {
     @Test
     public void bookingNotSuccessfulForNotWorkingEmail(RequestSpecification request) {
+        // prepare mock
         final String errorEmail = "myveryspecialemailforerror@error.de";
-        WireMock.stubFor(post(urlEqualTo(TestPaths.myApi()))
-                .willReturn(aResponse().withHeader("Content-Type", "application/json")
-                        .withStatus(200)));
         WireMock.stubFor(post(urlEqualTo(TestPaths.myApi()))
                 .withRequestBody(matchingJsonPath("recipient", equalTo(errorEmail)))
                 .willReturn(aResponse().withStatus(400)));
+        // call system under test (implicitly calls "myApi") and verify result
         Booking booking = BookingBuilder.defaultBooking().withEmail(errorEmail);
         request.body(booking)
                 .when()
                 .post(TestPaths.createBooking())
                 .then().statusCode(500);
+        // verifry that Wiremock is called during the test
         List<LoggedRequest> requests = WireMock.findAll(
             postRequestedFor(urlEqualTo(TestPaths.myApi())));
         assertThat(requests).hasSize(1);
+        ...
     }
 }
 
