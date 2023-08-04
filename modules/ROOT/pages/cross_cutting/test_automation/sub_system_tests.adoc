@@ -372,9 +372,58 @@ Example Cucumber After hook that adds screenshot with Selenium WebDriver::
 
 == Test Data Good Practices
 
-=== Keep references to data in the database at a central place
-
 === Use test data builders with defaults for complex structures
+Test data are often complex data structures.
+Usually only part of the attributes are relevant, e.g. you need a person and the relevant only relevant fact is that it is a student.
+Create builders that provide valid defaults that can be adapted to you test.
+
+Example usage of a test data builder::
++
+--
+[source, java]
+    // the created object will contain all required information based on default values
+    Person student = PersonBuilder.withJob(JobEnum.STUDENT).build();
+
+--
+
+
+=== Keep references to data in the database at a central place
+With complex systems it is not possible that each system test starts with an empty database.
+Usually there is a defined state of master data that every test can rely on.
+Tests need to refer to these data, e.g. to set an existing customer reference.
+Keep those references at a central place in your test code, so that they can be changed easily or be configured for test run on different databases.
+You can start with a simple set of constants and make it adaptable for different environments later.
+
+Example simple starting point for test data references::
++
+--
+[source, java]
+@RequiredArgsConstructor
+public enum ProductData implements TestDataEnum {
+    GENERAL("GEN"),
+    AVIATION("AA");
+    private final String value;
+    @Override
+    public String value() {
+        return value;
+    }
+}
+@RequiredArgsConstructor
+public enum UserData implements TestData {
+    STANDARD_USER("standard", "password"),
+    ADMIN_USER("admin", "admin");
+    private final String value;
+    private final String password;
+    @Override
+    public String value() {
+        return value;
+    }
+    public String password() {
+        return password;
+    }
+}
+
+--
 
 == Test Execution Good Practices
 
