@@ -288,7 +288,7 @@ More details can be found https://www.selenium.dev/documentation/test_practices/
 === Encapsulate UI components in your test code
 Web development often works with libraries or patterns of re-usable UI components that take care for a unique look and feel. 
 They change over time.  
-Similar to the motivation for the page object pattern, you don't want to change all tests or all page objects, if the internal structure of such a compoenent changes. 
+Like the motivation for the page object pattern, you don't want to change all tests or all page objects, if the internal structure of such a component changes. 
 So, similar to page objects, create "widget objects" that encapsulate the access to common UI components.
 
 If you use Selenium, you need to expect https://www.baeldung.com/selenium-staleelementreferenceexception[StaleElementReferenceExceptions].
@@ -379,9 +379,14 @@ Example Cucumber After hook that adds screenshot with Selenium WebDriver::
 == Test Execution Good Practices
 
 === Ensure Fail Fast in pipelines
+Subsystem- and System-Tests, especially when done via UI, will always take more time than Unit tests. 
+When the system is large you can end up in hours of test execution time.
+To keep the runtimes in an acceptable time, you can:
 
-* Parallel execution (surefire or cucumber)
-* Tag-wise (e.g. nightly)
+* Execute tests in parallel; 
+Tool Support: https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html[Surefire parallel option], https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine[Cucumber Junit 5 options]
+* Differentiate between priorities where lower priority tests are executed only nightly.
+Use tags to define the test sets and to configure the different test runs.
 
 === Simplify environment setup for local tests
 A local execution of tests is usually possible without any problems for isolated unit tests.
