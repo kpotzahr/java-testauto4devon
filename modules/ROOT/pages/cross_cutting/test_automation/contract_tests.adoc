@@ -27,7 +27,146 @@ The creation of the input / the event should also go through part of the logic h
 
 == How to apply to synchronous communication
 
-// TODO (kathrin)
+As an example for this section, we use two microservices in a system for bets on sport tournaments.
+The provider offers a REST API for information about scheduled matches (teams, date, stadium, ...).
+The consumer needs the teams of the match for a given id.
+
+Consumer services are the initiators of CDC tests. 
+They specify the contract they need to work with responses from the provider and implement tests to make sure that they can really handle what comes back.
+
+=== Only specify in the contract what the consumer app really needs
+Even if you know that the provider returns more attributes than you need, do not specify them in the contract.
+You limit what th provider can easily change unnecessarily.
+
+Example consumer contract with normal response::
++
+--
+[source, java]
+@ExtendWith(PactConsumerTestExt.class)
+@PactTestFor(providerName = "schedule", port = "7080")
+@SpringBootTest( properties = {"h2.tcp.enabled=false"})
+public class ScheduleConsumerTest {
+    @Pact(consumer = "bet", provider = "schedule")
+    public RequestResponsePact matchExists(PactDslWithProvider builder) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        return builder
+                .given("match with id 1 exists")
+                .uponReceiving("request to return match with id")
+                .path("/match/1")
+                .method("GET")
+                .willRespondWith()
+                .status(200)
+                .headers(headers)
+                .body(new PactDslJsonBody()
+                        .numberValue("matchId", 1)
+                        .stringMatcher("hometeam", "[A-Z]{3}", "POR")
+                        .stringMatcher("foreignteam", "[A-Z]{3}", "GER")
+                )
+                .toPact();
+    }
+    ...
+
+--
+
+=== Specify good cases and bad casers using provider states
+Even if you focus on data structures that are returned, don't forget that there can be error scenarios that require a contract.
+The "given" part in PACT allows specifying different states of the provider.
+Each state will produce a different result.
+The provider states are what consumer and provider need to discuss and agree on.
+
+Example consumer contract for an error case with other provider state::
++
+--
+[source, java]
+    @Pact(consumer = "bet", provider = "schedule")
+    public RequestResponsePact matchDoesNotExist(PactDslWithProvider builder) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        return builder
+                .given("match with id 2 does not exist")
+                .uponReceiving("request to return match with id")
+                .path("/match/2")
+                .method("GET")
+                .willRespondWith()
+                .status(400)
+                .headers(headers)
+                .toPact();
+    }
+
+--
+
+=== Implement states at provider side without complicated setup like database
+The provider only needs to implement the preconditions needed for the provider states. 
+The functionality itself is implemented by the provider anyway.
+PACT will simply call the API.
+
+Example provider side implementation::
++
+--
+[source, java]
+@ExtendWith(SpringExtension.class)
+@Provider("schedule")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+        properties = {"server.port=7088"})
+public class ScheduleProviderTest {
+    @MockBean
+    private MatchRepository matchRepository;
+    @TestTemplate
+    @ExtendWith(PactVerificationInvocationContextProvider.class)
+    void pactVerificationTestTemplate(PactVerificationContext context) {
+        context.verifyInteraction();
+    }
+    @State("match with id 1 exists")
+    public void match1Exists() {
+        Match match = new Match();
+        match.setForeignteam(Participant.BEL);
+        match.setHometeam(Participant.GER);
+        match.setStarttime(Instant.now());
+        match.setId(1L);
+        match.setStadium(Stadium.CAMP_NOU);
+        Mockito.when(matchRepository.findById(1L)).thenReturn(Optional.of(match));
+    }
+    @State("match with id 2 does not exist")
+    public void match2doesNotExist() {
+        Mockito.when(matchRepository.findById(2L)).thenReturn(Optional.empty());
+    }
+}
+
+--
+
+=== Make sure that the consumer app really understands provider messages
+The main focus of CDC tests is to make sure that the provider does not break the contract.
+But to be really sure that the communication works, the receiving part needs to be checked as well.
+
+Example contract verification at consumer side::
++
+--
+[source, java]
+@ExtendWith(PactConsumerTestExt.class)
+@PactTestFor(providerName = "spielplan", port = "7080")
+@SpringBootTest( properties = {"h2.tcp.enabled=false"})
+public class ScheduleConsumerTest {
+    @Autowired
+    private SpielplanClient spielplanClient;
+    // specify pacts
+    ...
+    // verify pact cosuming
+    @Test
+    @PactTestFor(pactMethod = "matchExists")
+    void verifyCaseMatchExists() {
+        Optional<MatchTo> match = spielplanClient.findMatch(1);
+        Assertions.assertThat(match.isPresent()).isTrue();
+    }
+    @Test
+    @PactTestFor(pactMethod = "matchDoesNotExist")
+    void verifyCaseMatchDoesNorExist() {
+        Optional<MatchTo> match = spielplanClient.findMatch(2);
+        Assertions.assertThat(match.isPresent()).isFalse();
+    }
+}
+
+--
 
 == How to apply to asynchronous communication
 Helper: Embedded Kafka
