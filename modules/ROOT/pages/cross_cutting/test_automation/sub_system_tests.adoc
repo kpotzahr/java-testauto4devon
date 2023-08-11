@@ -14,7 +14,7 @@ BDD tools allow automating the scenarios directly as automated tests.
 
 Typical Tool: https://cucumber.io/[Cucumber]
 
-==== Consider common BDD good and bad practices
+=== Consider common BDD good and bad practices
 Good and bad practices how to write scenarios with Gherkin can be found https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/[here].
 
 
@@ -22,12 +22,15 @@ Most important:
 
 * *Collaborate* with business, deelopement and test to create scenarios.
 Do NOT expect the business or testers to hand them readily over to you as a developer.
-* Aim for *short* scenarios (leave out irrelevant data, they can be set in the code as defaults; combine small UI action to user actions; ....).
+* Aim for *short* scenarios, e.g.
+** leave out irrelevant data, they can be set in the code as defaults
+** combine small UI action to user actions
+** ....
 * Do NOT use generic UI steps, but complete user actions: e.g. instead of "when the user enters "admin" in field "username" the user enters "adminpwd" in field "password" and the user presses the "login" button", use "when the user logs in as administrator"
 
 === Mix API and UI steps
 Just because your expected result can only be checked in the UI does not mean your whole test must be executed via UI.
-You can use the API to create you preconditions and the perform some step in the UI.
+You can use the API to create preconditions and then perform some steps in the UI.
 This makes the complete test faster and more reliable.
 
 === Prevent waiting for an explicit time
@@ -130,7 +133,7 @@ public class RestassuredConnectionSetup implements BeforeAllCallback {
 --
 
 === Execute API authorization at a central point
-You can have API-tests that test authorization and authentication, but in most cases, you want to test the functionality only.
+You can have API-tests that test authorization and authentication, but in most cases, you only want to test the functionality.
 So, keep authorization details out of your functional tests.
 If you use RestAssured, you can use a rule that intersects the RequestSpecification and adds authorization details.
 If your test framework supports Spring (like Cucumber), you can intercept requests in the RestTemplate.
@@ -204,7 +207,7 @@ public TestRestTemplate restTemplate() {
 Your test should only fail if your system under test does not behave like expected. 
 It may not depend on other systems that are not in your test scope.
 So, if your system under test communicates with another system or microservice, you need to mock the responses.
-If possible, prepare standard responses for test that do not test the interaction, but need a positive response to go on.
+If possible, prepare standard responses for tests that do not test the interaction, but need a positive response to go on.
 
 
 Typical tool: https://wiremock.org/[Wiremock]
@@ -273,7 +276,7 @@ public class BookingConfirmationApiTest {
 == UI-related Good Practices
 
 ====
-*UI-test* in this section means a functional test that uses UI calls to trigger or check functionality of a fully integrated system under test.
+*UI-test* in this section means a functional test that uses UI interaction to trigger or check functionality of a fully integrated system under test.
 This is a difference to Unit- or Unit-Integration Tests of a UI components.
 ====
 
@@ -374,7 +377,7 @@ Example Cucumber After hook that adds screenshot with Selenium WebDriver::
 
 === Use test data builders with defaults for complex structures
 Test data are often complex data structures.
-Usually only part of the attributes are relevant, e.g. you need a person and the relevant only relevant fact is that it is a student.
+Usually only part of the attributes are relevant, e.g. you need a person and the  only relevant fact is that it is a student.
 Create builders that provide valid defaults that can be adapted to you test.
 
 Example usage of a test data builder::
@@ -391,7 +394,7 @@ Example usage of a test data builder::
 With complex systems it is not possible that each system test starts with an empty database.
 Usually there is a defined state of master data that every test can rely on.
 Tests need to refer to these data, e.g. to set an existing customer reference.
-Keep those references at a central place in your test code, so that they can be changed easily or be configured for test run on different databases.
+Keep those references at a central place in your test code, so that they can be changed easily or be configured for test runs on different databases.
 You can start with a simple set of constants and make it adaptable for different environments later.
 
 Example simple starting point for test data references::

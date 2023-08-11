@@ -25,7 +25,7 @@ This ensures that the input/event is at least valid and can be processed.
 It is quite similar on the provider side, because databases or other systems should also be mocked there.
 The creation of the input / the event should also go through part of the logic here and not be created completely synthetically.
 
-== How to apply to synchronous communication
+== Verify synchronous communication with PACT
 
 As an example for this section, we use two microservices in a system for bets on sport tournaments.
 The provider offers a REST API for information about scheduled matches (teams, date, stadium, ...).
@@ -36,9 +36,9 @@ They specify the contract they need to work with responses from the provider and
 
 === Only specify in the contract what the consumer app really needs
 Even if you know that the provider returns more attributes than you need, do not specify them in the contract.
-You limit what th provider can easily change unnecessarily.
+Otherwise you would unnecessarily limit what the provider can easily change.
 
-Example consumer contract with normal response::
+Example consumer contract with happy flow response::
 +
 --
 [source, java]
