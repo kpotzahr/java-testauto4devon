@@ -23,7 +23,7 @@ public class NamingRuleTest {
 }
 --
 
-ArchUnit also offers support for well-known high-level architectures such as layered architecture or onion architecture (see also hexagonal architecture).
+ArchUnit also offers support for well-known high-level architectures such as xref:architecture/layered_architecture.adoc[layered architecture] or onion architecture (see also hexagonal architecture).
 
 Here, only the packages of the layers and the dependencies of the layers have to be defined. The following example shows this as an example.
 
@@ -51,3 +51,6 @@ You can find much more examples for your need link:https://github.com/TNG/ArchUn
 It should be noted that ArchUnit provides a good check of architectural guidelines within a module.
 Especially with larger applications, it makes sense to use Maven or Gradle modules to control dependencies and to structure the application.
 In this case, alternative means such as link:https://www.hello2morrow.com/products/sonargraph/architect9[Sonargraph] should be considered.
+
+== References
+* https://github.com/devonfw-sample/archunit

@@ -20,7 +20,7 @@ Good and bad practices how to write scenarios with Gherkin can be found https://
 
 Most important:
 
-* *Collaborate* with business, deelopement and test to create scenarios.
+* *Collaborate* with business, development and test to create scenarios.
 Do NOT expect the business or testers to hand them readily over to you as a developer.
 * Aim for *short* scenarios, e.g.
 ** leave out irrelevant data, they can be set in the code as defaults
@@ -36,7 +36,7 @@ This makes the complete test faster and more reliable.
 === Prevent waiting for an explicit time
 Whenever you have asynchronous behavior in your system under test your test needs to wait until the system has finished the reaction on some asynchronous event.
 This is always the case for UI tests when the screen reacts on user interaction, but can also happen in API tests when the system works with asynchronous events.
-Avoid waiting an explicit amount of time (dont't use Thread.sleep(5000) or TimeUnit.SECONDS.sleep(5))!
+Avoid waiting an explicit amount of time (dont't use `Thread.sleep(5000)` or `TimeUnit.SECONDS.sleep(5))`!
 It makes your tests slow and often not even more stable.
 
 Typical tools: 
@@ -263,7 +263,7 @@ public class BookingConfirmationApiTest {
                 .when()
                 .post(TestPaths.createBooking())
                 .then().statusCode(500);
-        // verifry that Wiremock is called during the test
+        // verify that Wiremock is called during the test
         List<LoggedRequest> requests = WireMock.findAll(
             postRequestedFor(urlEqualTo(TestPaths.myApi())));
         assertThat(requests).hasSize(1);

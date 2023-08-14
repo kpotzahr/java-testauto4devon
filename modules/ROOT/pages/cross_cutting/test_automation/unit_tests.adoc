@@ -50,7 +50,7 @@ https://site.mockito.org/[Mockito] is a good choice for a mocking framework.
 * For mocking remote connections https://wiremock.org/[Wiremock] is a good choice.
 
 * Use https://assertj.github.io/doc/[AssertJ] to write good readable assertions that also provide valuable feedback in case a test fails.
- Do not use legacy JUnit methods like assertEquals anymore.
+ Do not use legacy JUnit methods like `assertEquals` anymore.
 
 === Example
 
