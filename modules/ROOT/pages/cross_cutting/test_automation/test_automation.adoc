@@ -1,8 +1,8 @@
 = Test Automation
 
 Developing in an agile way has become normal in our projects. 
-Having a quality assured shippable product at the end of each sprint can only be achieved with an appropriate number of automated tests. 
-This section provides good practices for test automation.
+Having a quality assured deliverable product at any time or at least at the end of each sprint can only be achieved with efficient test automation. 
+This section provides good practices for this.
 
 == Understand test automation dimensions
 There is not one set of rules and tools for test automation.
