@@ -60,21 +60,20 @@ Typical tools:
 === Make tests transparent and analyzable by proper reporting
 There are three views that need to be addressed by test reporting:
 
-* Business: If you include the business in test creation (which is highly recommended), they will want to see what is tested and that the tests are successful. 
+*Business*: If you include the business in test creation (which is highly recommended), they will want to see what is tested and that the tests are successful.
 But they will not click through Jenkins builds to see this.
 
-Typical tool: https://www.getxray.app/test-management[Jira Xray Test Management]
+* Typical tool: https://www.getxray.app/test-management[Jira Xray Test Management]
 
-* Developers, testers: If a test fails, the reason for the failure must be easily analyzable.
+*Developers, testers*: If a test fails, the reason for the failure must be easily analyzable.
 
-Typical tool: https://plugins.jenkins.io/cucumber-reports/[Cucumber Jenkins Plugin]
+* Typical tool: https://plugins.jenkins.io/cucumber-reports/[Cucumber Jenkins Plugin]
 
-* Architects, developers, testers: Aggregated views on test runs are needed to detect general improvement needs like runtime optimizations.  
+*Architects, developers, testers*: Aggregated views on test runs are needed to detect general improvement needs like runtime optimizations.
 
-Typical tools:
-
-* https://docs.qameta.io/allure/[Allure reporting] 
-* Pushing individual metrics to Kibana or Influx + Grafana to get an aggregated view on execution times and stability (recommended for large-scale projects when the number of tests grows)
+* Typical tools:
+** https://docs.qameta.io/allure/[Allure reporting]
+** Pushing individual metrics to Kibana or Influx + Grafana to get an aggregated view on execution times and stability (recommended for large-scale projects when the number of tests grows)
 
 == API-related Good Practices
 
